@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   BookOpen, 
-  Calendar, 
   TrendingUp, 
   Award,
   ChevronLeft,
@@ -13,15 +12,7 @@ import {
   AlertCircle,
   Target,
   Zap,
-  BarChart3,
-  User,
-  Settings,
-  LogOut,
-  Bell,
-  Search,
-  Moon,
-  Sun,
-  Menu
+  BarChart3
 } from "lucide-react";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
@@ -40,10 +31,6 @@ const Analytics = () => {
   const [newTask, setNewTask] = useState("");
   const [streak, setStreak] = useState(0);
   const [activeTab, setActiveTab] = useState("courses");
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const statusEmojis = {
     Completed: "✅",
@@ -65,18 +52,44 @@ const Analytics = () => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          console.error("No authentication token found in localStorage; skipping analytics fetch.");
+          setCourses([]);
+          setStudySessions([]);
+          return;
+        }
+
         const headers = { Authorization: `Bearer ${token}` };
 
         const coursesRes = await fetch("/api/courses", { headers });
         const analyticsRes = await fetch("/api/analytics", { headers });
 
-        const coursesData = await coursesRes.json();
-        const analyticsData = await analyticsRes.json();
+        if (!coursesRes.ok) {
+          console.error("Failed to fetch courses:", coursesRes.status, coursesRes.statusText);
+          setCourses([]);
+        } else {
+          const coursesData = await coursesRes.json();
+          setCourses(coursesData);
+        }
 
-        setCourses(coursesData);
-        setStudySessions(analyticsData.studySessions || []);
+        if (!analyticsRes.ok) {
+          console.error("Failed to fetch analytics:", analyticsRes.status, analyticsRes.statusText);
+          setStudySessions([]);
+        } else {
+          let analyticsData;
+          try {
+            analyticsData = await analyticsRes.json();
+          } catch (parseError) {
+            console.error("Failed to parse analytics response as JSON:", parseError);
+            setStudySessions([]);
+            return;
+          }
+          setStudySessions(analyticsData.studySessions || []);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Unexpected error while fetching analytics data:", err);
+        setCourses([]);
+        setStudySessions([]);
       }
     };
 
@@ -104,7 +117,18 @@ const Analytics = () => {
   // Load tasks
   useEffect(() => {
     const saved = localStorage.getItem("calendarTasks");
-    if (saved) setTasks(JSON.parse(saved));
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Ensure we only set an object; otherwise fall back to empty object
+        setTasks(parsed && typeof parsed === "object" ? parsed : {});
+      } catch (error) {
+        // If the stored data is corrupted, remove it and fall back to an empty object
+        console.error("Failed to parse calendarTasks from localStorage:", error);
+        localStorage.removeItem("calendarTasks");
+        setTasks({});
+      }
+    }
     setSelectedDate(formatDateKey(new Date()));
   }, []);
 
@@ -172,10 +196,12 @@ const Analytics = () => {
   };
 
   const deleteTask = (index) => {
-    if (!tasks[selectedDate]) return;
-    const updated = [...tasks[selectedDate]];
-    updated.splice(index, 1);
-    setTasks({ ...tasks, [selectedDate]: updated });
+    setTasks((prev) => {
+      if (!prev[selectedDate]) return prev;
+      const updated = [...prev[selectedDate]];
+      updated.splice(index, 1);
+      return { ...prev, [selectedDate]: updated };
+    });
   };
 
   const generateCalendarGrid = (date) => {
@@ -228,8 +254,9 @@ const Analytics = () => {
       const courseInfo = courses.find((course) => course.id == c.courseId);
       const completedLessons = c.progress?.completedLessons?.length || 0;
       const totalLessons = courseInfo?.lessonsCount || 0;
-      const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-      const remaining = totalLessons - completedLessons;
+      const rawProgress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+      const progress = Math.max(0, Math.min(100, rawProgress));
+      const remaining = Math.max(0, totalLessons - completedLessons);
       return {
         id: c.courseId,
         title: courseInfo?.title || "Course",
@@ -254,15 +281,6 @@ const Analytics = () => {
   const averageProgress = myCourses.length > 0 
     ? Math.round(myCourses.reduce((acc, c) => acc + c.progress, 0) / myCourses.length) 
     : 0;
-
-  // Get notifications (mock data)
-  const notifications = [
-    { id: 1, message: "New course available: Advanced React", time: "5 min ago", read: false },
-    { id: 2, message: "You completed 3 lessons today!", time: "1 hour ago", read: false },
-    { id: 3, message: "Don't forget your Python assignment", time: "3 hours ago", read: true },
-  ];
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex flex-col">
@@ -369,7 +387,7 @@ const Analytics = () => {
               <div className="text-xl font-bold text-purple-600">
                 {Math.round(totalStudyTime / 60)} hrs
               </div>
-              <div className="text-xs text-gray-400 mt-2">This month</div>
+              <div className="text-xs text-gray-400 mt-2">All time</div>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
               <div className="text-sm text-gray-500">Upcoming Tasks</div>
@@ -453,7 +471,7 @@ const Analytics = () => {
                                 <div className="relative">
                                   <img 
                                     src={course.image} 
-                                    alt="" 
+                                    alt={course.title} 
                                     className="w-12 h-12 rounded-xl object-cover group-hover:scale-105 transition-transform duration-300" 
                                   />
                                   <div className="absolute inset-0 rounded-xl bg-indigo-600 opacity-0 group-hover:opacity-10 transition-opacity"></div>
@@ -744,6 +762,8 @@ const Analytics = () => {
                           <button
                             onClick={() => deleteTask(i)}
                             className="text-gray-400 hover:text-red-500 transition p-1"
+                            aria-label="Delete task"
+                            title="Delete task"
                           >
                             ✕
                           </button>
@@ -788,7 +808,7 @@ const Analytics = () => {
         </main>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 4px;
         }
