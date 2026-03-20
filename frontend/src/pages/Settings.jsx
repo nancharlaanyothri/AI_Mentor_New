@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import Header from "../components/Header";
 import Sidebar from "../components/Sidebar";
+import { useSidebar } from "../context/SidebarContext";
 import {
   User,
   Bell,
@@ -28,8 +29,7 @@ export default function Settings() {
   const [originalNotifications, setOriginalNotifications] = useState(null);
   const { theme, setTheme } = useTheme();
   const [avatarFile, setAvatarFile] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [activeSetting, setActiveSetting] = useState("Profile");
   const { user, updateUser, fetchUserProfile  } = useAuth();
   const [formData, setFormData] = useState({
@@ -143,25 +143,19 @@ export default function Settings() {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+    <div className="min-h-screen bg-canvas-alt flex">
+      <Header />
 
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activePage="settings"
-      />
+      <Sidebar activePage="settings" />
 
       <div
-        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 mt-3 ${
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
           sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
         }`}
       >
-        <div className="flex flex-1 mt-15">
-          {/* Settings Sidebar */}
-          <aside className="w-[280px] bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] m-6 mr-0">
+        <div className="flex flex-col lg:flex-row flex-1 mt-16">
+          {/* Settings Sidebar — hidden on mobile, visible on large screens */}
+          <aside className="hidden lg:block w-[280px] flex-shrink-0 bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] m-6 mr-0">
             <nav className="p-6">
               <div className="space-y-2">
                 {settingsNavItems.map((item) => {
@@ -193,23 +187,44 @@ export default function Settings() {
             </nav>
           </aside>
 
+          {/* Mobile Settings Tab Bar — visible only on small screens */}
+          <div className="lg:hidden flex overflow-x-auto gap-2 px-4 pt-3 pb-2 no-scrollbar">
+            {settingsNavItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <button
+                  onClick={() => setActiveSetting(item.label)}
+                  key={item.label}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                    activeSetting === item.label
+                      ? "bg-teal-50 dark:bg-teal-900/20 text-[#00BEA5] border border-[#00BEA5]"
+                      : "bg-card text-muted border border-border hover:bg-canvas-alt"
+                  }`}
+                >
+                  <IconComponent className="w-4 h-4 text-[#00BEA5]" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* Main Content */}
-          <main className="flex-1 p-8 mt-5">
+          <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 lg:mt-5 min-w-0">
             {activeSetting === "Profile" && (
-              <div className="max-w-[896px]">
+              <div className="w-full">
                 {/* Header */}
                 <div className="mb-8">
-                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                  <h1 className="text-xl sm:text-2xl md:text-[30px] font-bold text-main font-[Inter] mb-2">
                     Profile Settings
                   </h1>
-                  <p className="text-[16px] text-muted font-[Inter]">
+                  <p className="text-sm sm:text-[16px] text-muted font-[Inter]">
                     Manage your account information and preferences
                   </p>
                 </div>
 
                 {/* Settings Card */}
-                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
-                  <div className="flex gap-8 mb-8">
+                <div className="bg-card rounded-2xl sm:rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-4 sm:p-6 md:p-8">
+                  <div className="flex flex-col md:flex-row gap-6 md:gap-8 mb-8">
                     {/* Avatar Section */}
                     <div className="flex flex-col items-center">
                       <div className="relative mb-6">
@@ -246,7 +261,7 @@ export default function Settings() {
                     {/* Form Section */}
                     <div className="flex-1 space-y-6">
                       {/* First and Last Name */}
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="relative">
                           <label className="absolute -top-2 left-4 bg-card px-2 text-[14px] text-muted font-medium font-[Inter]">
                             First Name
@@ -307,7 +322,7 @@ export default function Settings() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex justify-end gap-4 pt-6 border-t border-border">
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-6 border-t border-border">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
@@ -327,16 +342,16 @@ export default function Settings() {
             )}
 
             {activeSetting === "Notifications" && (
-              <div className="max-w-[896px]">
+              <div className="w-full">
                 <div className="mb-8">
-                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                  <h1 className="text-xl sm:text-2xl md:text-[30px] font-bold text-main font-[Inter] mb-2">
                     Notification Settings
                   </h1>
-                  <p className="text-[16px] text-muted font-[Inter]">
+                  <p className="text-sm sm:text-[16px] text-muted font-[Inter]">
                     Choose how you want to be notified about updates
                   </p>
                 </div>
-                <div className="bg-card rounded-[24px] shadow p-8">
+                <div className="bg-card rounded-2xl sm:rounded-[24px] shadow p-4 sm:p-6 md:p-8">
                   <div className="space-y-6">
                     {[
                       { label: "Email Notifications", key: "emailNotifications", desc: "Receive notifications via email" },
@@ -344,10 +359,10 @@ export default function Settings() {
                       { label: "Course Updates", key: "courseUpdates", desc: "Get notified about new lessons and course updates" },
                       { label: "Discussion Replies", key: "discussionReplies", desc: "Get notified when someone replies to your discussions" },
                     ].map((item) => (
-                      <div key={item.key} className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-[16px] font-semibold text-main">{item.label}</h3>
-                          <p className="text-[14px] text-muted">{item.desc}</p>
+                      <div key={item.key} className="flex items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm sm:text-[16px] font-semibold text-main">{item.label}</h3>
+                          <p className="text-xs sm:text-[14px] text-muted">{item.desc}</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
@@ -370,7 +385,7 @@ export default function Settings() {
                     ))}
                   </div>
 
-                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-6 border-t border-border mt-6">
                     <button
                       type="button"
                       onClick={() => {
@@ -416,23 +431,23 @@ export default function Settings() {
             )}
 
             {activeSetting === "Password & Security" && (
-              <div className="max-w-[896px]">
+              <div className="w-full">
                 <div className="mb-8">
-                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                  <h1 className="text-xl sm:text-2xl md:text-[30px] font-bold text-main font-[Inter] mb-2">
                     Password & Security
                   </h1>
-                  <p className="text-[16px] text-muted font-[Inter]">
+                  <p className="text-sm sm:text-[16px] text-muted font-[Inter]">
                     Manage your password and security preferences
                   </p>
                 </div>
-                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+                <div className="bg-card rounded-2xl sm:rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-4 sm:p-6 md:p-8">
                   <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-[16px] font-semibold text-main font-[Inter]">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm sm:text-[16px] font-semibold text-main font-[Inter]">
                           Two-Factor Authentication
                         </h3>
-                        <p className="text-[14px] text-muted font-[Inter]">
+                        <p className="text-xs sm:text-[14px] text-muted font-[Inter]">
                           Add an extra layer of security to your account
                         </p>
                       </div>
@@ -455,12 +470,12 @@ export default function Settings() {
                       </label>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-[16px] font-semibold text-main font-[Inter]">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm sm:text-[16px] font-semibold text-main font-[Inter]">
                           Login Alerts
                         </h3>
-                        <p className="text-[14px] text-muted font-[Inter]">
+                        <p className="text-xs sm:text-[14px] text-muted font-[Inter]">
                           Get notified when your account is accessed from a new
                           device
                         </p>
@@ -570,7 +585,7 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-4 pt-6 border-t border-border mt-6">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
@@ -618,22 +633,22 @@ export default function Settings() {
             )}
 
             {activeSetting === "Appearance" && (
-              <div className="max-w-[896px]">
+              <div className="w-full">
                 <div className="mb-8">
-                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                  <h1 className="text-xl sm:text-2xl md:text-[30px] font-bold text-main font-[Inter] mb-2">
                     Appearance Settings
                   </h1>
-                  <p className="text-[16px] text-muted font-[Inter]">
+                  <p className="text-sm sm:text-[16px] text-muted font-[Inter]">
                     Customize the look and feel of your interface
                   </p>
                 </div>
-                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+                <div className="bg-card rounded-2xl sm:rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-4 sm:p-6 md:p-8">
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-[16px] font-semibold text-main font-[Inter] mb-3">
                         Theme
                       </h3>
-                      <div className="grid grid-cols-3 gap-4">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {[
                           { value: "light", label: "Light", icon: "☀️" },
                           { value: "dark", label: "Dark", icon: "🌙" },
@@ -688,7 +703,7 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-6 border-t border-border mt-6">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
@@ -724,16 +739,16 @@ export default function Settings() {
             )}
 
             {activeSetting === "Language" && (
-              <div className="max-w-[896px]">
+              <div className="w-full">
                 <div className="mb-8">
-                  <h1 className="text-[30px] font-bold text-main font-[Inter] mb-2">
+                  <h1 className="text-xl sm:text-2xl md:text-[30px] font-bold text-main font-[Inter] mb-2">
                     Language Settings
                   </h1>
-                  <p className="text-[16px] text-muted font-[Inter]">
+                  <p className="text-sm sm:text-[16px] text-muted font-[Inter]">
                     Choose your preferred language for the interface
                   </p>
                 </div>
-                <div className="bg-card rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-8">
+                <div className="bg-card rounded-2xl sm:rounded-[24px] shadow-[0_4px_6px_0_rgba(0,0,0,0.10),0_10px_15px_0_rgba(0,0,0,0.10)] p-4 sm:p-6 md:p-8">
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-[16px] font-semibold text-main font-[Inter] mb-3">
@@ -766,7 +781,7 @@ export default function Settings() {
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-4 pt-6 border-t border-border mt-6">
+                  <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4 pt-6 border-t border-border mt-6">
                     <button
                       type="button"
                       className="h-[50px] px-6 rounded-xl border border-border bg-card text-main text-[16px] font-medium font-[Inter] hover:bg-canvas-alt"
@@ -809,7 +824,7 @@ export default function Settings() {
                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-55 animate-fadeIn">
 
                <div className="relative bg-gradient-to-br from-white to-slate-100 dark:from-slate-800 dark:to-slate-900 
-                   rounded-3xl p-10 w-[420px] text-center shadow-2xl border border-slate-200 
+                   rounded-3xl p-6 sm:p-10 w-[90vw] max-w-[420px] text-center shadow-2xl border border-slate-200 
                    dark:border-slate-700 transform transition-all duration-300 scale-100 animate-popup">
 
                  {/* Animated Success Circle */}
