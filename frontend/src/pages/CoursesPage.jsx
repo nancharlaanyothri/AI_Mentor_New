@@ -7,6 +7,8 @@ import { useSidebar } from "../context/SidebarContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import API_BASE_URL from "../lib/api";
 import { useTranslation } from "react-i18next";
+import CourseList from "../components/CourseList";
+import TagFilter from "../components/TagFilter";
 
 const CoursesPage = () => {
   const { t } = useTranslation();
@@ -25,18 +27,47 @@ const CoursesPage = () => {
 
   const [showExploreFilter, setShowExploreFilter] = useState(false);
   const [selectedExploreCategory, setSelectedExploreCategory] = useState("all");
+  const [search, setSearch] = useState("");
+  const [tag, setTag] = useState("");
+  const [selectedTag, setSelectedTag] = useState("All");
+  const [showAll, setShowAll] = useState(false);
 
+
+  // Categories (for category filter)
   const exploreCategories = [
-  "all",
-  ...new Set(exploreCourses.map((course) => course.category))
+    "all",
+    ...new Set(exploreCourses.map((course) => course.category))
   ];
 
-  const filteredExploreCourses =
-  selectedExploreCategory === "all"
-    ? exploreCourses
-    : exploreCourses.filter(
-        (course) => course.category === selectedExploreCategory
-      );
+  // Tags (for tag filter)
+  const allTags = [
+    "All",
+    ...new Set(exploreCourses.flatMap((course) => course.tags || []))
+  ];
+  const visibleTags = allTags.slice(0, 6);
+
+  // Filter courses based on selected tag (client-side filtering)
+  const filteredExploreCourses = exploreCourses.filter(course => {
+    // ✅ SEARCH MATCH
+    const searchTerm = search.toLowerCase();
+    const matchesSearch =
+      course.title.toLowerCase().includes(searchTerm) ||
+      course.tags?.some(tag => tag.toLowerCase().includes(searchTerm));
+
+    // ✅ TAG MATCH (client-side)
+    const matchesTag = selectedTag === "All" || course.tags?.includes(selectedTag);
+
+    // ✅ CATEGORY MATCH (from backend filter)
+    const matchesCategory = selectedExploreCategory === "all" || course.category === selectedExploreCategory;
+
+    // ✅ ONLY INCLUDE IF ALL MATCH
+    return matchesSearch && matchesTag && matchesCategory;
+  });
+
+  /* ================= SYNC TAG → BACKEND ================= */
+  useEffect(() => {
+    setTag(selectedTag === "All" ? "" : selectedTag);
+  }, [selectedTag]);
 
   /* ================= FETCH COURSES ================= */
   useEffect(() => {
@@ -45,7 +76,7 @@ const CoursesPage = () => {
         const token = localStorage.getItem("token");
 
         const [exploreRes, myRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/courses`),
+          fetch(`${API_BASE_URL}/api/courses?search=${search}&category=${selectedExploreCategory}&tag=${tag}`),
           fetch(`${API_BASE_URL}/api/courses/my-courses`, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -66,7 +97,7 @@ const CoursesPage = () => {
     };
 
     fetchCourses();
-  }, []);
+  }, [search, selectedExploreCategory, tag]);
 
   // If navigated here with state (e.g. from Dashboard), apply requested tab
   const location = useLocation();
@@ -96,7 +127,7 @@ const CoursesPage = () => {
       });
 
       const [exploreRes, myRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/courses`),
+        fetch(`${API_BASE_URL}/api/courses?search=${search}&category=${selectedExploreCategory}&tag=${tag}`),
         fetch(`${API_BASE_URL}/api/courses/my-courses`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
@@ -246,21 +277,29 @@ const CoursesPage = () => {
             )}
 
             {/* ================= EXPLORE COURSES ================= */}
-          {activeTab === "explore" && (
+            {activeTab === "explore" && (
               <div className="space-y-6">
-
-                  {/* FILTER BUTTON */}
-                  <div className="relative flex justify-end text-slate-500">
+                {/* 🔍 SEARCH INPUT */}
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                  <input
+                    type="text"
+                    placeholder="Search courses by title..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="border px-4 py-2 rounded-lg w-full sm:max-w-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  
+                  {/* CATEGORY FILTER BUTTON */}
+                  <div className="relative flex text-slate-500">
                     <button
                       type="button"
                       onClick={() => setShowExploreFilter(!showExploreFilter)}
                       aria-label="Toggle explore filters"
-                      aria-expanded={showExploreFilter}
-                      aria-controls="explore-filter-menu"
+                      className="flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-gray-50"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="w-8 h-8 text-slate-500 cursor-pointer hover:text-teal-500"
+                        className="w-5 h-5"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -272,12 +311,13 @@ const CoursesPage = () => {
                           d="M3 4h18l-7 8v6l-4 2v-8L3 4z"
                         />
                       </svg>
+                      <span className="text-sm">Category: {selectedExploreCategory === "all" ? "All" : selectedExploreCategory}</span>
                     </button>
 
                     {showExploreFilter && (
                       <div
                         id="explore-filter-menu"
-                        className="absolute right-0 mt-10 bg-white border rounded-lg shadow-xl p-2 z-50 min-w-[150px]"
+                        className="absolute right-0 mt-12 bg-white border rounded-lg shadow-xl p-2 z-50 min-w-[150px]"
                       >
                         {exploreCategories.map((cat) => (
                           <button
@@ -288,7 +328,7 @@ const CoursesPage = () => {
                             }}
                             className={`block w-full text-left px-4 py-2 rounded hover:bg-teal-500 hover:text-white capitalize ${
                               selectedExploreCategory === cat
-                                ? "font-bold text-teal-600"
+                                ? "font-bold text-teal-600 bg-teal-50"
                                 : ""
                             }`}
                           >
@@ -298,75 +338,113 @@ const CoursesPage = () => {
                       </div>
                     )}
                   </div>
+                </div>
 
-                  {/* COURSE GRID */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {(() => {
-                      const visibleExploreCourses = filteredExploreCourses.filter(
-                        (course) => !myCourses.some((c) => c.id === course.id)
-                      );
+                {/* 🔖 TAG FILTER */}
+                {allTags.length > 1 && (
+                  <TagFilter
+                    tags={showAll ? tags : visibleTags}
+                    selectedTag={selectedTag}
+                    setSelectedTag={setSelectedTag}
+                  />
+                   
+                )}
 
-                      if (visibleExploreCourses.length === 0) {
-                        return (
-                          <div className="col-span-full flex flex-col items-center justify-center py-12 text-center text-slate-500">
-                            <p className="mb-4 text-sm">
-                              No courses found for this category.
-                            </p>
+                {/* COURSE GRID */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {(() => {
+                    const visibleExploreCourses = filteredExploreCourses.filter(
+                      (course) => !myCourses.some((c) => c.id === course.id)
+                    );
+
+                    if (visibleExploreCourses.length === 0) {
+                      return (
+                        <div className="col-span-full flex flex-col items-center justify-center py-12 text-center text-slate-500">
+                          <p className="mb-4 text-sm">
+                            No courses found for the selected filters.
+                          </p>
+                          <div className="flex gap-3">
                             <button
                               type="button"
-                              onClick={() => setSelectedExploreCategory(exploreCategories[0])}
+                              onClick={() => {
+                                setSelectedExploreCategory("all");
+                                setSelectedTag("All");
+                                setSearch("");
+                              }}
                               className="px-4 py-2 text-sm font-semibold rounded-lg bg-[#2DD4BF] text-white"
                             >
-                              Reset filters
+                              Reset all filters
                             </button>
                           </div>
-                        );
-                      }
+                        </div>
+                      );
+                    }
 
-                      return visibleExploreCourses.map((course) => (
-                        <div
-                          key={course.id}
-                          className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm"
-                        >
-                          <div className="relative h-40">
-                            <img
-                              src={course.image}
-                              className="w-full h-full object-cover"
-                              alt={course.title}
-                            />
-                            <div className="absolute bottom-3 right-3 bg-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow">
-                              <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                              {course.rating}
-                            </div>
+                    return visibleExploreCourses.map((course) => (
+                      <div
+                        key={course.id}
+                        className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
+                      >
+                        <div className="relative h-40">
+                          <img
+                            src={course.image}
+                            className="w-full h-full object-cover"
+                            alt={course.title}
+                          />
+                          <div className="absolute bottom-3 right-3 bg-white px-2 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow">
+                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                            {course.rating}
                           </div>
+                          {course.isBookmarked && (
+                            <div className="absolute top-3 right-3 bg-white p-1.5 rounded-full shadow">
+                              <Bookmark className="w-3 h-3 text-teal-500 fill-teal-500" />
+                            </div>
+                          )}
+                        </div>
 
-                          <div className="p-4 space-y-3">
-                            <h3 className="text-sm font-semibold">{course.title}</h3>
+                        <div className="p-4 space-y-3">
+                          <h3 className="text-sm font-semibold line-clamp-2">{course.title}</h3>
 
-                            <p className="text-xs text-muted">
-                              {course.lessons} lessons • {course.level}
-                            </p>
+                          {/* Tags */}
+                          {course.tags && course.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {course.tags.slice(0, 3).map((tag, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
 
-                            <div className="flex justify-between items-center">
-                              <div>
+                          <p className="text-xs text-muted">
+                            {course.lessons} lessons • {course.level}
+                          </p>
+
+                          <div className="flex justify-between items-center">
+                            <div>
+                              {course.price !== "₹0" && (
                                 <span className="line-through text-sm text-slate-400 mr-2">
                                   {course.price}
                                 </span>
-                                <span className="font-bold text-green-600">₹0</span>
-                              </div>
-
-                              <button
-                                onClick={() => navigate(`/course-preview/${course.id}`)}
-                                className="px-4 py-2 rounded-lg bg-[#2DD4BF] text-white text-xs font-semibold"
-                              >
-                                {t("common.enroll")}
-                              </button>
+                              )}
+                              <span className="font-bold text-green-600">₹0</span>
                             </div>
+
+                            <button
+                              onClick={() => navigate(`/course-preview/${course.id}`)}
+                              className="px-4 py-2 rounded-lg bg-[#2DD4BF] text-white text-xs font-semibold hover:bg-teal-600 transition"
+                            >
+                              {t("common.enroll")}
+                            </button>
                           </div>
                         </div>
-                      ));
-                    })()}
-                  </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
               </div>
             )}
           </div>

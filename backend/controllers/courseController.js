@@ -11,6 +11,8 @@ const __dirname = path.dirname(__filename);
 ========================= */
 const getCourses = async (req, res) => {
   try {
+    const { search, category, tag } = req.query;
+
     const coursesPath = path.join(
       __dirname,
       "../../frontend/public/data/courses.json"
@@ -19,10 +21,11 @@ const getCourses = async (req, res) => {
     const rawData = fs.readFileSync(coursesPath, "utf-8");
     const jsonData = JSON.parse(rawData);
 
-    const courses = (jsonData.popularCourses || []).map((course) => ({
+    let courses = (jsonData.popularCourses || []).map((course) => ({
       id: course.id,
       title: course.title,
       category: course.category,
+      tags: course.tags || [], // ✅ important for tag filter
       level: course.level,
       lessons: course.lessons,
       lessonsCount: course.lessonsCount ||
@@ -35,6 +38,33 @@ const getCourses = async (req, res) => {
       image: course.image,
     }));
 
+    /* ================= FILTER LOGIC ================= */
+    // 🔍 Search
+if (search) {
+  courses = courses.filter((c) =>
+    c.title?.toLowerCase().includes(search.toLowerCase())
+  );
+}
+
+// 📂 Category (fixed: case-insensitive + trim)
+if (category && category !== "all") {
+  courses = courses.filter(
+    (c) =>
+      c.category &&
+      c.category.toLowerCase().trim() === category.toLowerCase().trim()
+  );
+}
+
+// 🏷️ Tag (fixed: safe + case-insensitive)
+if (tag) {
+  courses = courses.filter(
+    (c) =>
+      Array.isArray(c.tags) &&
+      c.tags.some((t) =>
+        t.toLowerCase().trim().includes(tag.toLowerCase().trim())
+      )
+  );
+}
     res.json(courses);
   } catch (error) {
     console.error("GET COURSES JSON ERROR:", error);

@@ -66,6 +66,7 @@
   "popularCourses": [
     {
       "id": 1,
+      "tags": ["React", "JavaScript", "Frontend"],
       "title": "React Fundamentals",
       "category": "Web Development",
       "categoryColor": "bg-purple-100 text-purple-600",
@@ -87,6 +88,7 @@
     },
     {
       "id": 2,
+      "tags": ["Python", "Data Science", "NumPy", "Pandas"],
       "title": "Python For AI",
       "category": "AI & ML",
       "categoryColor": "bg-cyan-100 text-cyan-600",
@@ -108,6 +110,7 @@
     },
     {
       "id": 3,
+      "tags": ["AI Ethics", "Bias", "Fairness", "Responsible AI", "Privacy"],
       "title": "AI Ethics & Bias",
       "category": "AI Ethics",
       "categoryColor": "bg-green-100 text-green-600",
@@ -129,8 +132,9 @@
     },
     {
       "id": 4,
+      "tags": ["PostgreSQL", "SQL", "Database", "Backend", "Data Modeling"],
       "title": "PostgreSQL",
-      "category": "Databases",
+      "category": "Database",
       "categoryColor": "bg-blue-100 text-blue-600",
       "lessons": "40 lessons",
       "lessonsCount": 40,
@@ -150,6 +154,7 @@
     },
     {
       "id": 5,
+      "tags": ["MongoDB", "NoSQL", "Database", "Document Store", "Backend"],
       "title": "MongoDB Fundamentals",
       "category": "Database",
       "categoryColor": "bg-green-100 text-green-600",
