@@ -1,15 +1,10 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import User from "../models/User.js";
+import Course from "../models/Course.js";
 import { generateCertificatePDF } from "../templates/certificateTemplate.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export const getCertificates = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id);
+    const user = req.user;
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const purchasedCourses = user.purchasedCourses || [];
@@ -20,25 +15,31 @@ export const getCertificates = async (req, res) => {
       inProgress: 0,
     };
 
-    const coursesPath = path.join(__dirname, "../../frontend/public/data/courses.json");
-    const rawData = fs.readFileSync(coursesPath, "utf-8");
-    const jsonData = JSON.parse(rawData);
-    const courseDetails = jsonData.popularCourses || [];
-    
     let coursesData = [];
     
     for (const pCourse of purchasedCourses) {
-       const dbCourse = courseDetails.find(c => Number(c.id) === Number(pCourse.courseId));
+       const dbCourse = await Course.findByPk(pCourse.courseId);
        
        let totalLessons = 0;
        if (dbCourse) {
-         totalLessons = dbCourse.lessonsCount || 
-           (dbCourse.lessons.includes(" of ") 
-             ? parseInt(dbCourse.lessons.split(" of ")[1]) 
-             : parseInt(dbCourse.lessons.split(" ")[0])) || 0;
-       } else {
-         totalLessons = 10; // default fallback
-       }
+          const lessonsText = typeof dbCourse.lessons === "string" ? dbCourse.lessons : null;
+
+          if (typeof dbCourse.lessonsCount === "number" && !Number.isNaN(dbCourse.lessonsCount)) {
+            totalLessons = dbCourse.lessonsCount;
+          } else if (lessonsText) {
+
+          const parsedFromOf = lessonsText.includes(" of ") ? parseInt(lessonsText.split(" of ")[1]) : NaN;
+
+          const parsedFromFirst = Number.isNaN(parsedFromOf) ? parseInt(lessonsText.split(" ")[0]) : parsedFromOf;
+
+          totalLessons = Number.isNaN(parsedFromFirst) ? 0 : parsedFromFirst;
+
+          } else {
+            totalLessons = 0;
+          }
+        } else {
+            totalLessons = 10; // default fallback
+          }
        
        const completedLessonsList = pCourse.progress?.completedLessons || [];
        let completedLessons = completedLessonsList.length;
@@ -85,7 +86,7 @@ export const generateCertificate = async (req, res) => {
     const { courseId } = req.query;
     if (!courseId) return res.status(400).json({ message: "courseId is required" });
 
-    const user = await User.findByPk(req.user.id);
+    const user = req.user;
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const purchasedCourses = user.purchasedCourses || [];
@@ -93,11 +94,7 @@ export const generateCertificate = async (req, res) => {
     
     if (!pCourse) return res.status(404).json({ message: "Course not found for this user" });
     
-    const coursesPath = path.join(__dirname, "../../frontend/public/data/courses.json");
-    const rawData = fs.readFileSync(coursesPath, "utf-8");
-    const jsonData = JSON.parse(rawData);
-    const courseDetails = jsonData.popularCourses || [];
-    const dbCourse = courseDetails.find(c => Number(c.id) === Number(courseId));
+    const dbCourse = await Course.findByPk(courseId);
     const courseTitle = pCourse.courseTitle || dbCourse?.title || "Unknown Course";
     
     // Format date text

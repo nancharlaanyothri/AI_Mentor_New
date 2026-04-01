@@ -6,10 +6,8 @@ import {
   BookOpen,
   CheckCircle,
   Clock,
-  TrendingUp,
   ChevronRight,
   FileText,
-  Shield,
 } from "lucide-react";
 import Header from "../components/Header";
 import API_BASE_URL from "../lib/api";
@@ -221,9 +219,9 @@ const CertificatesPage = () => {
 
                       {/* Course Image */}
                       <div className="relative h-44 overflow-hidden">
-                        {course.courseImage ? (
+                        {course.courseImage || course.image ? (
                           <img
-                            src={course.courseImage}
+                            src={course.courseImage || course.image}
                             alt={course.courseTitle}
                             className="w-full h-full object-cover"
                           />
@@ -243,9 +241,12 @@ const CertificatesPage = () => {
 
                       {/* Content */}
                       <div className="p-5">
-                        <h3 className="text-lg font-bold text-[#2D3436] dark:text-gray-200 mb-3 line-clamp-2">
+                        <h3 className="text-lg font-bold text-[#2D3436] dark:text-gray-200 mb-1.5 line-clamp-2">
                           {course.courseTitle}
                         </h3>
+                        <p className="text-xs text-[#2D3436]/60 dark:text-gray-400 mb-3">
+                          {course.lessons || `${course.totalLessons || 0} lessons`}
+                        </p>
 
                         {/* Progress */}
                         <div className="mb-4">
