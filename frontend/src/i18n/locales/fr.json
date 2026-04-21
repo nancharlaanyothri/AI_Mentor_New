@@ -14,7 +14,8 @@
     "learning": "Apprentissage",
     "watched": "Vidéos Regardées",
     "admin": "Panneau Admin",
-    "account": "Compte"
+    "account": "Compte",
+    "certificates": "Certificats"
   },
   "common": {
     "cancel": "Annuler",
@@ -35,7 +36,9 @@
       "notifications": "Notifications",
       "password_security": "Mot de Passe et Sécurité",
       "appearance": "Apparence",
-      "language": "Langue"
+      "language": "Langue",
+      "contactus": "Contacter le support",
+      "delete_account": "Supprimer mon compte"
     },
     "profile": {
       "title": "Paramètres du Profil",
@@ -88,6 +91,12 @@
       "subtitle": "Choisissez votre langue préférée pour l'interface",
       "interface_language": "Langue de l'Interface",
       "updated": "Paramètres de langue mis à jour avec succès !"
+    },
+    "contactus": {
+      "title": "Contacter le support",
+      "subtitle": "Nous répondons généralement dans les 24 heures.",
+      "subject": "Sujet",
+      "message": "Message"
     }
   },
   "dashboard": {
@@ -265,7 +274,10 @@
     "signup": "Inscription",
     "email": "E-mail",
     "password": "Mot de Passe",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "logout_confirm_title": "Déconnexion",
+    "logout_confirm_msg": "Êtes-vous sûr de vouloir vous déconnecter?",
+    "cancel": "Annuler"
   },
   "preferences": {
     "nav_title": "Préférences",
@@ -315,5 +327,24 @@
       "articles": "Lecture d'articles",
       "live_classes": "Cours en direct"
     }
+  },
+  "certificates": {
+    "title": "Mes Certificats",
+    "subtitle": "Suivez vos réalisations et téléchargez vos certificats",
+    "loading": "Chargement des certificats...",
+    "enrolled_courses": "Cours Inscrits",
+    "courses_completed": "Cours Terminés",
+    "certificates_earned": "Certificats Obtenus",
+    "in_progress": "En cours",
+    "no_courses_title": "Aucun cours inscrit pour l'instant",
+    "no_courses_desc": "Inscrivez-vous à des cours et terminez-les pour gagner vos certificats!",
+    "browse_courses": "Parcourir les Cours",
+    "progress": "Progression",
+    "lessons": "leçons",
+    "completed_badge": "TERMINÉ",
+    "complete_to_earn": "Terminez ce cours pour obtenir votre certificat",
+    "continue_learning": "Continuer l'Apprentissage",
+    "download": "Télécharger le Certificat",
+    "generating": "Génération..."
   }
 }
