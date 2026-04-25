@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
-import { useSidebar } from "../context/SidebarContext";
 import {
   Search,
   Bell,
@@ -20,7 +17,6 @@ import API_BASE_URL from "../lib/api";
 const WatchedVideos = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
   const [courseFilter, setCourseFilter] = useState("All Courses");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -69,21 +65,12 @@ const WatchedVideos = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-canvas-alt flex">
-        <Sidebar activePage="watched" />
-        <div
-          className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-            }`}
-        >
-          <Header />
-          <main className="flex-1 p-4 md:p-6 lg:p-8 flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-              <p className="text-muted">{t("watched.loading")}</p>
-            </div>
-          </main>
+      <main className="flex-1 p-4 md:p-6 lg:p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-muted">{t("watched.loading")}</p>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -330,21 +317,9 @@ const WatchedVideos = () => {
   );
 
   return (
-    <div className="min-h-screen bg-canvas-alt flex">
-      {/* Header */}
-      <Header />
-
-      {/* Sidebar */}
-      <Sidebar activePage="watched" />
-
-      {/* Main Content */}
-      <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-          }`}
-      >
-
+    <>
         {/* Main Dashboard Content */}
-        <main className="flex-1 p-4 mt-16 md:p-6 lg:p-8">
+        <main className="flex-1 p-4 md:p-6 lg:p-8">
           {/* Page Title */}
           <div className="mb-6 lg:mb-8">
             <h1
@@ -374,8 +349,7 @@ const WatchedVideos = () => {
             ))}
           </div>
         </main>
-      </div>
-    </div>
+    </>
   );
 };
 

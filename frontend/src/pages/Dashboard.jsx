@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
 import { useAuth } from "../context/AuthContext";
-import { useSidebar } from "../context/SidebarContext";
 import { useTranslation } from "react-i18next";
 import {
   Search,
@@ -20,19 +17,19 @@ import {
   ChevronRight,
   ChevronLeft as ChevronLeftIcon,
   CheckCircle,
-  Bookmark,
   Clock,
   Star,
+  Award,
 } from "lucide-react";
+import Preferences from "../components/Preferences";
 
 const Dashboard = () => {
   const { t } = useTranslation();
-  const { sidebarOpen, setSidebarOpen, sidebarCollapsed, setSidebarCollapsed } = useSidebar();
   const [coursesData, setCoursesData] = useState({
     statsCards: [],
     allCourses: [],
   });
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchQuery = "";
   const [loading, setLoading] = useState(true);
   const { user, fetchUserProfile } = useAuth();
   const navigate = useNavigate();
@@ -66,7 +63,7 @@ const Dashboard = () => {
         console.log("Fetched statsCards:", statsCards);
 
         setCoursesData({ allCourses, statsCards });
-        await fetchUserProfile(); // Ensure user data is up to date
+        await fetchUserProfile();
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
         console.log("Error details:", error);
@@ -76,9 +73,8 @@ const Dashboard = () => {
     };
 
     fetchAllData();
-  }, []); // Remove fetchUserProfile dependency to prevent re-fetching on every render
+  }, []);
 
-  // Calculate dynamic stats based on user's actual progress
   const calculateStats = () => {
     console.log("Calculating stats with user:", user);
     console.log("coursesData:", coursesData);
@@ -106,7 +102,7 @@ const Dashboard = () => {
           iconBg: "bg-green-100",
         },
         {
-          icon: <Bookmark className="w-5 h-5 text-purple-600" />,
+          icon: <Award className="w-5 h-5 text-purple-600" />,
           value: "0",
           label: "Certificates",
           change: "+0",
@@ -130,7 +126,6 @@ const Dashboard = () => {
     const totalHours = user.analytics?.totalHours || 0;
 
     user.purchasedCourses.forEach((purchasedCourse) => {
-      // Find the course in allCourses to get lesson count
       const courseInfo = coursesData.allCourses.find(
         (c) => c.id == purchasedCourse.courseId
       );
@@ -178,7 +173,6 @@ const Dashboard = () => {
 
   const dynamicStatsCards = calculateStats();
 
-  // Create dynamic myCourses from user data
   console.log("Creating myCourses with user:", user);
   console.log("coursesData.allCourses:", coursesData.allCourses);
 
@@ -228,7 +222,6 @@ const Dashboard = () => {
 
   console.log("Final myCourses:", myCourses);
 
-  // Create dynamic continueLearning from user data
   console.log("Creating continueLearning");
 
   const continueLearning = coursesData.allCourses
@@ -252,7 +245,7 @@ const Dashboard = () => {
         purchasedCourse?.progress?.completedLessons?.length || 0;
       return completedLessons > 0 && completedLessons < totalLessons;
     })
-    .slice(0, 3) // Limit to 3 courses
+    .slice(0, 3)
     .map((course) => {
       const purchasedCourse = user?.purchasedCourses?.find(
         (p) => p.courseId === course.id
@@ -271,7 +264,6 @@ const Dashboard = () => {
           ? Math.round((completedLessons / totalLessons) * 100)
           : 0;
 
-      // Get current lesson info
       const currentLesson = purchasedCourse?.progress?.currentLesson;
       const lessonTitle = currentLesson
         ? `Lesson ${currentLesson.lessonId}: ${currentLesson.moduleTitle}`
@@ -319,61 +311,29 @@ const Dashboard = () => {
 
   console.log("Final continueLearning:", continueLearning);
 
-  const schedule = [
-    {
-      title: "Machine Learning",
-      time: "10:00 AM - 11:30 AM",
-      color: "bg-blue-50 border-l-blue-500",
-    },
-    {
-      title: "React Development",
-      time: "2:00 PM - 3:30 PM",
-      color: "bg-green-50 border-l-green-500",
-    },
-  ];
-
   const handleBrowseCourses = () => {
-    // Navigate to courses page
     navigate("/courses", { state: { activeTab: "explore" } });
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-canvas-alt flex flex-col">
-        <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-        <Sidebar activePage="dashboard" />
-        <div
-          className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-            sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-          }`}
-        >
-          <main className="flex-1 mt-10 overflow-x-hidden overflow-y-auto bg-canvas-alt p-6">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-muted">{t("dashboard.loading")}</div>
-            </div>
-          </main>
+      <main className="flex-1 p-4 md:p-6 lg:p-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-muted">{t("dashboard.loading")}</p>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-canvas-alt flex flex-col">
-      <Header searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-
-      <Sidebar activePage="dashboard" />
-
-      {/* Main Content */}
-      <div
-        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-          sidebarCollapsed ? "lg:ml-20" : "lg:ml-80"
-        }`}
-      >
-        {/* Header */}
-
-        {/* Dashboard Content */}
-        <main className="flex-1 mt-3 overflow-x-hidden overflow-y-auto bg-canvas-alt p-6">
-          <div className="max-w-7xl pt-16 mx-auto space-y-8">
+    <main className="flex-1 overflow-x-hidden overflow-y-auto bg-canvas-alt p-6">
+      <Preferences 
+        key={localStorage.getItem("token")} 
+        mode="modal" 
+        onSuccess={() => { console.log('Preferences saved') }} 
+      />
+      <div className="max-w-7xl pt-16 mx-auto space-y-8">
             {/* Stats Cards */}
             <div className="grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {dynamicStatsCards.map((card, index) => {
@@ -402,60 +362,103 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 gap-8">
               {/* Popular Courses */}
-              <div>
-                <h2 className="text-xl font-bold text-main mb-6">
-                  {t("dashboard.popular_courses")}
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {coursesData.allCourses.slice(0, 13).map((course, index) => (
-                    <Link to={`/learning/${course.id}`} key={index}>
-                      <div className="bg-card rounded-xl border border-border overflow-hidden shadow-sm h-full hover:shadow-lg hover:-translate-y-1 hover:border-teal-500/40 transition-all duration-300">
-                        <div className="relative">
-                          <img
-                            src={course.image}
-                            alt={course.title}
-                            className="w-full h-40 object-cover"
-                          />
-                          <div className="absolute top-3 right-3 bg-card rounded-full p-2">
-                            <Bookmark className="w-4 h-4 text-teal-600" />
-                          </div>
-                          <div className="absolute bottom-3 right-3 bg-card rounded-full px-2 py-1 flex items-center space-x-1">
-                            <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
-                            <span className="text-xs font-medium">
-                              {course.rating}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-4">
-                          <div
-                            className={`inline-block px-2 py-1 rounded-full text-xs font-medium mb-3 ${course.categoryColor}`}
-                          >
-                            {course.category}
-                          </div>
-                          <h3 className="font-semibold text-main mb-2 line-clamp-2">
-                            {course.title}
-                          </h3>
-                          <p className="text-sm text-muted mb-4">
-                            {course.lessons}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-lg font-bold text-main">
-                              {course.price}
-                            </span>
-                            <span className="text-xs text-muted">
-                              {course.students}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
+              
+<div>
+  <div className="flex items-center justify-between mb-4">
+    <h2 className="text-xl font-bold text-main">
+      {t("dashboard.popular_courses")}
+    </h2>
+
+    {/* Buttons */}
+   <div className="flex gap-2">
+  <button
+    onClick={() => {
+      document.getElementById("courseSlider").scrollBy({
+        left: -300,
+        behavior: "smooth",
+      });
+    }}
+    className="p-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
+  >
+    <ChevronLeft className="w-4 h-4" />
+  </button>
+
+  <button
+    onClick={() => {
+      document.getElementById("courseSlider").scrollBy({
+        left: 300,
+        behavior: "smooth",
+      });
+    }}
+    className="p-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700"
+  >
+    <ChevronRight className="w-4 h-4" />
+  </button>
+</div>
+</div>
+
+
+  {/* Slider */}
+  <div
+    id="courseSlider"
+    className="flex gap-6 overflow-x-auto pb-4 scroll-smooth"
+  >
+    {coursesData.allCourses.slice(0, 10).map((course, index) => (
+      <div
+        key={index}
+        className="bg-card rounded-xl border border-border w-64 flex-shrink-0 shadow-sm"
+      >
+        {/* Image */}
+        <div className="relative h-40">
+          <img
+            src={course.image}
+            alt={course.title}
+            className="w-full h-full object-cover rounded-t-xl"
+          />
+
+          {/* Rating */}
+          <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded-full flex items-center gap-1">
+            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+            <span className="text-xs text-white font-semibold">
+              {course.rating}
+            </span>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-2">
+          <h3 className="text-sm font-semibold text-main line-clamp-2">
+            {course.title}
+          </h3>
+
+          <p className="text-xs text-muted">
+            {course.lessons} • {course.level}
+          </p>
+
+          <div className="flex justify-between items-center mt-2">
+            <span className="font-bold text-green-500">₹0</span>
+
+            <button
+              onClick={() => navigate(`/course-preview/${course.id}`)}
+              className="px-3 py-1.5 text-xs bg-teal-500 text-white rounded-lg hover:bg-teal-600"
+            >
+              {t("dashboard.enroll")}
+            </button>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+              
+
+              
+
+              
 
               {/* My Courses Table */}
               <div className="xl:col-span-2 flex flex-col">
-                <h2 className="text-xl font-bold text-main mb-6">My Courses</h2>
+                <h2 className="text-xl font-bold text-main mb-6">{t("dashboard.my_courses")}</h2>
                 <div className="bg-card rounded-xl border border-border overflow-hidden">
                   <div className="overflow-x-auto">
                     {filteredMyCourses.length !== 0 ? (
@@ -463,16 +466,16 @@ const Dashboard = () => {
                         <thead className="bg-canvas-alt">
                           <tr>
                             <th className="px-4 py-4 text-left text-sm font-medium text-muted">
-                              Course
+                              {t("dashboard.course")}
                             </th>
                             <th className="px-4 py-4 text-left text-sm font-medium text-muted">
-                              Progress
+                              {t("dashboard.progress")}
                             </th>
                             <th className="px-4 py-4 text-left text-sm font-medium text-muted">
-                              Lessons
+                              {t("dashboard.lessons")}
                             </th>
                             <th className="px-4 py-4 text-left text-sm font-medium text-muted">
-                              Level
+                              {t("dashboard.level")}
                             </th>
                           </tr>
                         </thead>
@@ -554,7 +557,7 @@ const Dashboard = () => {
                                 onClick={() => navigate(`/course-preview/${course.id}`)}
                                 className="ml-3 px-3 py-2 bg-teal-500 text-white text-xs font-medium rounded-lg hover:bg-teal-600"
                               >
-                                View
+                                {t("dashboard.view")}
                               </button>
                             </div>
                           ))}
@@ -564,14 +567,14 @@ const Dashboard = () => {
                       <div className="p-6 text-center text-muted">
                         <p>
                           {normalizedSearchQuery
-                            ? "No courses match your search."
-                            : "You haven't enrolled in any courses yet."}
+                            ? t("dashboard.no_courses_search")
+                            : t("dashboard.no_courses_enrolled")}
                         </p>
                         <button
                           className="mt-4 px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-lg hover:bg-teal-600"
                           onClick={handleBrowseCourses}
                         >
-                          Browse Courses
+                          {t("dashboard.browse_courses")}
                         </button>
                       </div>
                     )}
@@ -582,7 +585,7 @@ const Dashboard = () => {
                 {filteredContinueLearning.length !== 0 ? (
                   <div>
                     <h2 className="text-xl font-bold text-main mt-6 mb-6">
-                      Continue Learning
+                      {t("dashboard.continue_learning")}
                     </h2>
                     <div className="space-y-4">
                       {filteredContinueLearning.map((item, index) => (
@@ -619,7 +622,7 @@ const Dashboard = () => {
                               to={`/learning/${item.id}`}
                               className="ml-4 px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-lg hover:bg-teal-600"
                             >
-                              Continue
+                              {t("dashboard.continue")}
                             </Link>
                           </div>
                         </div>
@@ -627,27 +630,27 @@ const Dashboard = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-6  text-muted">
-                    <p>
-                      {normalizedSearchQuery
-                        ? "No in-progress courses match your search."
-                        : "Start Learning to get your progress tracked!"}
-                    </p>
-                    <button                      className="mt-4 px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-lg hover:bg-teal-600"
-                      onClick={() => navigate("/courses")}
-                    >
-                      My Courses
-                    </button> 
-                  </div>
+                  null
+                  // <div className="p-6  text-muted">
+                  //   <p>
+                  //     {normalizedSearchQuery
+                  //       ? "No in-progress courses match your search."
+                  //       : "Start Learning to get your progress tracked!"}
+                  //   </p>
+                  //   <button
+                  //     className="mt-4 px-4 py-2 bg-teal-500 text-white text-sm font-medium rounded-lg hover:bg-teal-600"
+                  //     onClick={() => navigate("/courses")}
+                  //   >
+                  //     My Courses
+                  //   </button>
+                  // </div>
               )}
               </div>
 
             </div>
 
           </div>
-        </main>
-      </div>
-    </div>
+    </main>
   );
 };
 

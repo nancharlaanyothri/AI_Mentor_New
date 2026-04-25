@@ -14,7 +14,8 @@
     "learning": "Aprendizado",
     "watched": "Vídeos Assistidos",
     "admin": "Painel Admin",
-    "account": "Conta"
+    "account": "Conta",
+    "certificates": "Certificados"
   },
   "common": {
     "cancel": "Cancelar",
@@ -35,7 +36,9 @@
       "notifications": "Notificações",
       "password_security": "Senha e Segurança",
       "appearance": "Aparência",
-      "language": "Idioma"
+      "language": "Idioma",
+      "contactus": "Contatar Suporte",
+      "delete_account": "Excluir Minha Conta"
     },
     "profile": {
       "title": "Configurações de Perfil",
@@ -88,6 +91,12 @@
       "subtitle": "Escolha seu idioma preferido para a interface",
       "interface_language": "Idioma da Interface",
       "updated": "Configurações de idioma atualizadas com sucesso!"
+    },
+    "contactus": {
+      "title": "Contatar Suporte",
+      "subtitle": "Geralmente respondemos em 24 horas.",
+      "subject": "Assunto",
+      "message": "Mensagem"
     }
   },
   "dashboard": {
@@ -113,7 +122,14 @@
     "design": "Design",
     "beginner": "Iniciante",
     "intermediate": "Intermediario",
-    "advanced": "Avancado"
+    "advanced": "Avancado",
+    "no_courses_search": "Nenhum curso corresponde à sua pesquisa.",
+    "no_courses_enrolled": "Você ainda não se matriculou em nenhum curso.",
+    "browse_courses": "Explorar Cursos",
+    "continue_learning": "Continuar Aprendendo",
+    "continue": "Continuar",
+    "view": "Ver",
+    "enroll": "Inscrever-se"
   },
   "courses": {
     "title": "Central de Aprendizado",
@@ -123,7 +139,20 @@
     "not_enrolled": "Você ainda não está matriculado em nenhum curso.",
     "lessons": "aulas",
     "loading": "Carregando cursos...",
-    "confirm_enrollment": "Confirmar Matrícula"
+    "confirm_enrollment": "Confirmar Matrícula",
+    "enrolled_courses": "Cursos Matriculados",
+    "enrolled_short": "Matriculado",
+    "explore_short": "Explorar",
+    "filters": "Filtros",
+    "apply_filters": "Aplicar Filtros",
+    "clear_all": "Limpar Tudo",
+    "category": "Categoria",
+    "skill_level": "Nível de Habilidade",
+    "pricing": "Preços",
+    "any_level": "Qualquer Nível",
+    "any_price": "Qualquer Preço",
+    "all_categories": "Todas as Categorias",
+    "no_match_filters": "Nenhum curso matriculado corresponde à sua pesquisa ou filtros atuais."
   },
   "learning": {
     "loading": "Carregando...",
@@ -165,7 +194,47 @@
     "total_course": "Total de cursos",
     "course_performance": "Desempenho do Curso",
     "no_courses": "Não há cursos para exibir desempenho.",
-    "progress_lessons": "Progresso"
+    "progress_lessons": "Progresso",
+    "welcome_back_user": "Bem-vindo de volta, {{name}}!",
+    "analytics_subtitle": "Aqui está seu progresso de aprendizado e próximas tarefas",
+    "enrolled_courses": "Cursos Matriculados",
+    "attendance_rate": "Taxa de Frequência",
+    "current_streak_label": "Sequência Atual",
+    "streak_days": "Sequência de {{count}} dia!",
+    "streak_days_plural": "Sequência de {{count}} dias!",
+    "achievements_unlocked": "Conquistas desbloqueadas",
+    "complete_to_earn": "Conclua cursos para ganhar",
+    "average_progress": "Progresso Médio",
+    "completed_lessons_count": "Lições Concluídas",
+    "across_all_courses": "Em todos os cursos",
+    "total_study_time_label": "Tempo Total de Estudo",
+    "this_month": "Este mês",
+    "upcoming_tasks_count": "Próximas Tarefas",
+    "need_attention": "Precisa de atenção",
+    "my_courses_tab": "Meus Cursos",
+    "calendar_tasks_tab": "Calendário e Tarefas",
+    "browse_all_courses": "Explorar Todos os Cursos",
+    "table_course": "Curso",
+    "table_progress": "Progresso",
+    "table_lessons": "Lições",
+    "table_level": "Nível",
+    "table_action": "Ação",
+    "continue_btn": "Continuar",
+    "no_courses_match": "Nenhum curso corresponde à sua pesquisa",
+    "no_courses_enrolled": "Ainda não matriculado em nenhum curso.",
+    "browse_courses_btn": "Explorar Cursos",
+    "tasks_for_date": "Tarefas para {{date}}",
+    "add_task_placeholder": "Adicionar nova tarefa...",
+    "add_btn": "Adicionar",
+    "legend_today": "Hoje",
+    "legend_all_completed": "Todas as tarefas concluídas",
+    "legend_tasks_pending": "Tarefas pendentes",
+    "legend_other_month": "Outro mês",
+    "status_completed": "Concluído",
+    "status_ongoing": "Em andamento",
+    "status_upcoming": "Próximo",
+    "delete_task_confirm": "Tem certeza que deseja excluir esta tarefa?",
+    "task_exists_error": "Já existe uma tarefa para esta data."
   },
   "discussions": {
     "title": "Discussões",
@@ -225,6 +294,77 @@
     "signup": "Cadastrar",
     "email": "E-mail",
     "password": "Senha",
-    "logout": "Sair"
+    "logout": "Sair",
+    "logout_confirm_title": "Sair",
+    "logout_confirm_msg": "Tem certeza que deseja sair?",
+    "cancel": "Cancelar"
+  },
+  "preferences": {
+    "nav_title": "Preferências",
+    "modal_title": "Personalize sua experiência",
+    "modal_subtitle": "Apenas 5 perguntas rápidas para começar",
+    "settings_modal_subtitle": "Adapte sua experiência de aprendizado da maneira que for melhor para você.",
+    "save_continue": "Próximo →",
+    "save_changes": "Finalizar",
+    "save_success": "Preferências atualizadas com sucesso",
+    "step_of": "{{current}} / {{total}}",
+    "next": "Próximo →",
+    "back": "← Voltar",
+    "finish": "Finalizar",
+    "skip_for_now": "Pular por enquanto - vou configurar depois",
+    "questions": {
+      "learning_goal": "Qual é o seu objetivo de aprendizado?",
+      "interested_topics": "Quais tópicos mais lhe interessam?",
+      "experience_level": "Quanta experiência você tem?",
+      "weekly_commitment": "Quantas horas por semana você pode dedicar?",
+      "learning_style": "Qual é o seu estilo preferido?"
+    },
+    "hints": {
+      "select_one": "Selecione uma opção",
+      "select_multiple": "Selecione todas as opções que se aplicam"
+    },
+    "options": {
+      "switch_careers": "Mudar de Carreira",
+      "upskill_work": "Aprimorar Habilidades",
+      "personal_interest": "Interesse Pessoal",
+      "get_certified": "Obter Certificado",
+      "ai": "Inteligência Artificial",
+      "web_dev": "Desenvolvimento Web",
+      "data_science": "Ciência de Dados",
+      "cloud": "Computação em Nuvem",
+      "cybersecurity": "Cibersegurança",
+      "mobile_apps": "Aplicativos Móveis",
+      "beginner": "Iniciante",
+      "basics": "Noções Básicas",
+      "intermediate": "Intermediário",
+      "advanced": "Avançado",
+      "1_2_hours": "1-2 horas",
+      "3_5_hours": "3-5 horas",
+      "6_10_hours": "6-10 horas",
+      "10_plus_hours": "10+ horas",
+      "videos": "Videoaulas",
+      "projects": "Projetos Práticos",
+      "articles": "Leitura de Artigos",
+      "live_classes": "Aulas ao Vivo"
+    }
+  },
+  "certificates": {
+    "title": "Meus Certificados",
+    "subtitle": "Acompanhe suas conquistas e baixe certificados",
+    "loading": "Carregando certificados...",
+    "enrolled_courses": "Cursos Matriculados",
+    "courses_completed": "Cursos Concluídos",
+    "certificates_earned": "Certificados Obtidos",
+    "in_progress": "Em Andamento",
+    "no_courses_title": "Nenhum curso matriculado ainda",
+    "no_courses_desc": "Matricule-se em cursos e conclua-os para ganhar seus certificados!",
+    "browse_courses": "Explorar Cursos",
+    "progress": "Progresso",
+    "lessons": "aulas",
+    "completed_badge": "CONCLUÍDO",
+    "complete_to_earn": "Conclua este curso para ganhar seu certificado",
+    "continue_learning": "Continuar Aprendendo",
+    "download": "Baixar Certificado",
+    "generating": "Gerando..."
   }
 }
