@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   Award,
@@ -8,6 +8,9 @@ import {
   Clock,
   ChevronRight,
   FileText,
+  Eye,
+  X,
+  Sparkles,
 } from "lucide-react";
 import API_BASE_URL from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -20,6 +23,25 @@ const CertificatesPage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const handleClosePreview = useCallback((e) => {
+    if (e.key === "Escape") setShowPreview(false);
+  }, []);
+
+  useEffect(() => {
+    if (showPreview) {
+      document.addEventListener("keydown", handleClosePreview);
+      document.body.style.overflow = "hidden";
+    } else {
+      document.removeEventListener("keydown", handleClosePreview);
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleClosePreview);
+      document.body.style.overflow = "";
+    };
+  }, [showPreview, handleClosePreview]);
 
   useEffect(() => {
     const fetchCertificates = async () => {
@@ -266,6 +288,18 @@ const CertificatesPage = () => {
                       <p className="mt-4 text-[11px] text-gray-400 dark:text-gray-500 text-center max-w-xs">
                         Complete any course to earn your personalized certificate like this one!
                       </p>
+
+                      {/* Preview Button */}
+                      <button
+                        onClick={() => setShowPreview(true)}
+                        className="mt-5 group relative inline-flex items-center gap-2.5 px-7 py-3 rounded-2xl font-semibold text-sm overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg hover:shadow-indigo-400/40"
+                        style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%)", color: "white" }}
+                      >
+                        <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                        <Eye className="w-4 h-4 relative z-10" />
+                        <span className="relative z-10">Preview Full Certificate</span>
+                        <Sparkles className="w-3.5 h-3.5 relative z-10 opacity-80" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -419,6 +453,161 @@ const CertificatesPage = () => {
               )}
             </>
       </div>
+
+      {/* ── Full-Screen Certificate Preview Modal ── */}
+      {showPreview && (
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          style={{ background: "rgba(10,10,30,0.85)", backdropFilter: "blur(12px)" }}
+          onClick={() => setShowPreview(false)}
+        >
+          {/* Animated background orbs */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-20 animate-pulse"
+              style={{ background: "radial-gradient(circle, #6366f1, transparent)", filter: "blur(60px)" }} />
+            <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-15 animate-pulse"
+              style={{ background: "radial-gradient(circle, #8b5cf6, transparent)", filter: "blur(60px)", animationDelay: "1s" }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full opacity-10 animate-pulse"
+              style={{ background: "radial-gradient(circle, #a78bfa, transparent)", filter: "blur(80px)", animationDelay: "0.5s" }} />
+          </div>
+
+          {/* Close button */}
+          <button
+            onClick={() => setShowPreview(false)}
+            className="absolute top-5 right-5 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white transition-all duration-200 hover:scale-110 hover:rotate-90"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
+          {/* ESC hint */}
+          <p className="absolute top-6 left-1/2 -translate-x-1/2 text-white/30 text-xs tracking-widest uppercase">
+            Press ESC or click outside to close
+          </p>
+
+          {/* Certificate wrapper — stops propagation so clicking cert doesn't close */}
+          <div
+            className="relative w-full max-w-2xl mx-auto"
+            onClick={(e) => e.stopPropagation()}
+            style={{ animation: "certZoomIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}
+          >
+            {/* Glow ring */}
+            <div className="absolute -inset-1 rounded-3xl opacity-60 blur-lg"
+              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4)" }} />
+
+            {/* The certificate card */}
+            <div
+              className="relative bg-white rounded-2xl overflow-hidden shadow-2xl border-2 border-indigo-300 transition-all duration-500"
+              style={{ transformStyle: "preserve-3d" }}
+              onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = ((e.clientX - rect.left) / rect.width - 0.5) * 18;
+                const y = ((e.clientY - rect.top) / rect.height - 0.5) * -18;
+                e.currentTarget.style.transform = `perspective(900px) rotateY(${x}deg) rotateX(${y}deg) scale(1.02)`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "perspective(900px) rotateY(0deg) rotateX(0deg) scale(1)";
+              }}
+            >
+              {/* Top gradient bar */}
+              <div className="h-3" style={{ background: "linear-gradient(90deg, #6366f1, #8b5cf6, #06b6d4)" }} />
+
+              <div className="p-10 text-center relative">
+                {/* Corner brackets */}
+                <div className="absolute top-5 left-5 w-7 h-7 border-t-2 border-l-2 border-indigo-300 rounded-tl-md" />
+                <div className="absolute top-5 right-5 w-7 h-7 border-t-2 border-r-2 border-indigo-300 rounded-tr-md" />
+                <div className="absolute bottom-5 left-5 w-7 h-7 border-b-2 border-l-2 border-indigo-300 rounded-bl-md" />
+                <div className="absolute bottom-5 right-5 w-7 h-7 border-b-2 border-r-2 border-indigo-300 rounded-br-md" />
+
+                {/* Logo */}
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center shadow-md"
+                    style={{ background: "linear-gradient(135deg, #f59e0b, #ef4444)" }}>
+                    <Award className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-black text-xl tracking-tight">
+                    <span style={{ color: "#00bea3" }}>UPTO</span>
+                    <span style={{ color: "#f97316" }}>SKILLS</span>
+                  </span>
+                </div>
+                <p className="text-xs italic mb-6" style={{ color: "#6366f1" }}>Learn and Earn Platform</p>
+
+                {/* Title */}
+                <h2 className="text-3xl font-bold text-gray-800 mb-1 tracking-wide" style={{ fontFamily: "Georgia, serif" }}>
+                  Certificate of Completion
+                </h2>
+                <div className="h-0.5 w-24 mx-auto mb-6 rounded-full"
+                  style={{ background: "linear-gradient(90deg, #6366f1, #8b5cf6)" }} />
+
+                <p className="text-sm text-gray-400 mb-2">This is to certify that</p>
+                <p className="text-2xl font-extrabold text-gray-800 mb-1 italic" style={{ fontFamily: "Georgia, serif" }}>
+                  Your Name
+                </p>
+                <div className="h-px w-48 bg-gray-300 mx-auto mb-4" />
+
+                <p className="text-sm text-gray-400 mb-2">has successfully completed the comprehensive</p>
+                <p className="text-lg font-bold mb-1" style={{ color: "#6366f1" }}>"Course Name"</p>
+                <p className="text-xs text-gray-400 mb-4">Program</p>
+
+                <p className="text-xs text-gray-400 italic max-w-md mx-auto mb-6 leading-relaxed">
+                  This certificate acknowledges the successful completion of all required coursework and assessments.
+                  The recipient has demonstrated proficiency in the subject matter.
+                </p>
+
+                {/* Bottom section */}
+                <div className="mt-4 pt-5 border-t border-gray-100 flex justify-between items-end">
+                  <div className="text-left">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Issue Date</p>
+                    <p className="text-sm font-bold text-gray-700">
+                      {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-full border-2 border-indigo-300 flex items-center justify-center bg-indigo-50 shadow-inner">
+                      <CheckCircle className="w-7 h-7 text-indigo-500" />
+                    </div>
+                    <p className="text-[9px] font-bold text-indigo-400 mt-1 tracking-widest uppercase">Verified & Authentic</p>
+                    <p className="text-[9px] text-gray-400">Official Seal</p>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-0.5">Certificate ID</p>
+                    <p className="text-sm font-bold font-mono text-gray-700">UTS-XXXXX</p>
+                    {/* Mini QR placeholder */}
+                    <div className="mt-1.5 w-10 h-10 ml-auto border border-gray-200 rounded flex items-center justify-center bg-gray-50">
+                      <div className="grid grid-cols-3 gap-px w-6 h-6">
+                        {Array.from({ length: 9 }).map((_, i) => (
+                          <div key={i} className={`rounded-[1px] ${[0,1,3,5,7,8].includes(i) ? "bg-gray-700" : "bg-transparent"}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-[8px] text-gray-300 mt-0.5">Scan to verify</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Watermark */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none opacity-[0.035]">
+                <span className="text-8xl font-black text-gray-900 rotate-[-30deg] tracking-widest">
+                  UPTOSKILLS
+                </span>
+              </div>
+            </div>
+
+            {/* Caption below */}
+            <p className="text-center text-white/40 text-xs mt-4 tracking-wide">
+              🏆 This is a preview of the certificate you&apos;ll receive upon completing a course
+            </p>
+          </div>
+
+          <style>{`
+            @keyframes certZoomIn {
+              from { opacity: 0; transform: scale(0.80) translateY(30px); }
+              to   { opacity: 1; transform: scale(1)    translateY(0px); }
+            }
+          `}</style>
+        </div>
+      )}
     </main>
   );
 };
